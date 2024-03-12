@@ -2,12 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"github.com/julienschmidt/httprouter"
-	_ "github.com/lib/pq"
 	"log"
-	"main/db"
 	"net/http"
 	"os"
+
+	"github.com/julienschmidt/httprouter"
+	_ "github.com/lib/pq"
+	"main/db"
 )
 
 func main() {
@@ -17,10 +18,24 @@ func main() {
 		log.Fatal(err)
 	}
 
+	user := os.Getenv("SCIM_USER")
+	password := os.Getenv("SCIM_PASSWORD")
+
+	if password == "" || user == "" {
+		log.Fatal("Requires environment variables SCIM_USER and SCIM_PASSWORD")
+	}
+
+	oktaAPIToken := os.Getenv("OKTA_API_TOKEN")
+	if oktaAPIToken == "" {
+		log.Fatal("Requires environment variable OKTA_API_TOKEN")
+	}
+
+	oktaClient, err := newOktaClient(oktaAPIToken)
+
 	queries := db.New(dbConn)
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	h := NewHandler("admin", "password", logger, queries, dbConn)
+	h := NewHandler(user, password, logger, queries, dbConn, oktaClient)
 
 	router := httprouter.New()
 	router.GET("/scim/v2/Users/:id", h.GetUser())

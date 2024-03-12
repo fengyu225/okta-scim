@@ -6,33 +6,36 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"log"
-	"main/db"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/julienschmidt/httprouter"
+	"main/db"
 )
 
 type handler struct {
-	username string
-	password string
-	logger   *log.Logger
-	db       *db.Queries
-	dbConn   *sql.DB
+	username   string
+	password   string
+	logger     *log.Logger
+	db         *db.Queries
+	dbConn     *sql.DB
+	oktaClient *oktaClient
 }
 
-func NewHandler(username, password string, logger *log.Logger, db *db.Queries, dbConn *sql.DB) *handler {
+func NewHandler(username, password string, logger *log.Logger, db *db.Queries, dbConn *sql.DB, oktaClient *oktaClient) *handler {
 	return &handler{
-		username: username,
-		password: password,
-		logger:   logger,
-		db:       db,
-		dbConn:   dbConn,
+		username:   username,
+		password:   password,
+		logger:     logger,
+		db:         db,
+		dbConn:     dbConn,
+		oktaClient: oktaClient,
 	}
 }
 
