@@ -20,6 +20,19 @@ var oktaGroupToTwilioRole = map[string]string{
 	"twilio-wfo-team_leader":             "wfo.team-leader",
 }
 
+var twilioRoleToOktaGroup = map[string]string{
+	"supervisor":                  "twilio-supervisor",
+	"agent":                       "twilio-agent",
+	"admin":                       "twilio-admin",
+	"wfo.data-analyst":            "twilio-wfo-data_analyst",
+	"wfo.quality-process-manager": "twilio-wfo-quality_process_manager",
+	"wfo.quality-manager":         "twilio-wfo-quality_manager",
+	"wfo.data-auditor":            "twilio-wfo-data_auditor",
+	"wfo.dashboard-viewer":        "twilio-wfo-dashboard_viewer",
+	"wfo.full-access":             "twilio-wfo-full_access",
+	"wfo.team-leader":             "twilio-wfo-team_leader",
+}
+
 const (
 	oktaDomain              = "https://hood.oktapreview.com"
 	twilioRoleUserAttribute = "twilioFlexUserRolesArray"
