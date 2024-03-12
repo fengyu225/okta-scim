@@ -614,23 +614,60 @@ func (h *handler) UpdateGroup() httprouter.Handle {
 			return
 		}
 
-		// Update group membership
-		// First, remove all existing members from the group
-		if err := h.db.RemoveAllGroupMembers(context.Background(), updateReq.DisplayName); err != nil {
-			http.Error(w, "Failed to remove group members", http.StatusInternalServerError)
+		// Fetch current group members
+		currentMembers, err := h.db.GetGroupMembers(context.Background(), updateReq.DisplayName)
+		if err != nil {
+			http.Error(w, "Failed to fetch group members", http.StatusInternalServerError)
 			return
 		}
 
-		// Then, add the new members to the group
+		// Map current members for easy lookup
+		currentMemberMap := make(map[string]bool)
+		for _, member := range currentMembers {
+			currentMemberMap[member.OktaID] = true
+		}
+
+		// Map new members from the update request
+		newMemberMap := make(map[string]SCIMGroupMember)
 		for _, member := range updateReq.Members {
 			if member.Display == "" || member.Value == "" {
 				continue
 			}
+			newMemberMap[member.Value] = member
+		}
+
+		// Determine members to add and remove
+		var membersToAdd []SCIMGroupMember
+		var membersToRemove []string
+		for value, member := range newMemberMap {
+			if !currentMemberMap[value] {
+				membersToAdd = append(membersToAdd, member)
+			}
+		}
+		for value := range currentMemberMap {
+			if _, exists := newMemberMap[value]; !exists {
+				membersToRemove = append(membersToRemove, value)
+			}
+		}
+
+		// Add new members
+		for _, member := range membersToAdd {
 			if err := h.db.AddGroupMember(context.Background(), db.AddGroupMemberParams{
 				EmployeeID:    member.Value,
 				OktaGroupName: updateReq.DisplayName,
 			}); err != nil {
 				http.Error(w, "Failed to add group member", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Remove members no longer in the group
+		for _, value := range membersToRemove {
+			if err := h.db.RemoveGroupMember(context.Background(), db.RemoveGroupMemberParams{
+				EmployeeID:    value,
+				OktaGroupName: updateReq.DisplayName,
+			}); err != nil {
+				http.Error(w, "Failed to remove group member", http.StatusInternalServerError)
 				return
 			}
 		}

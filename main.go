@@ -33,7 +33,6 @@ func main() {
 	router.GET("/scim/v2/Groups/:id", h.GetGroup())
 	router.GET("/scim/v2/Groups", h.ListGroups())
 	router.PUT("/scim/v2/Groups/:id", h.UpdateGroup())
-	router.PATCH("/scim/v2/Groups/:id", h.UpdateGroup())
 	router.DELETE("/scim/v2/Groups/:id", h.DeleteGroup())
 
 	log.Fatal(http.ListenAndServe(":8080", router))

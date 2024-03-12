@@ -124,3 +124,16 @@ FROM EmployeeOktaGroup
 WHERE okta_group_name IN (SELECT name
                           FROM OktaGroup
                           WHERE okta_id = $1);
+
+-- name: GetGroupMembers :many
+SELECT e.okta_id, e.email
+FROM Employee e
+         INNER JOIN EmployeeOktaGroup eog ON e.okta_id = eog.employee_id
+         INNER JOIN OktaGroup g ON eog.okta_group_name = g.name
+WHERE g.name = $1;
+
+-- name: RemoveGroupMember :exec
+DELETE
+FROM EmployeeOktaGroup
+WHERE employee_id = $1
+  AND okta_group_name = $2;

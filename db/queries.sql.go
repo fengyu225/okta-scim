@@ -198,6 +198,42 @@ func (q *Queries) GetGroupByName(ctx context.Context, name string) (GetGroupByNa
 	return i, err
 }
 
+const getGroupMembers = `-- name: GetGroupMembers :many
+SELECT e.okta_id, e.email
+FROM Employee e
+         INNER JOIN EmployeeOktaGroup eog ON e.okta_id = eog.employee_id
+         INNER JOIN OktaGroup g ON eog.okta_group_name = g.name
+WHERE g.name = $1
+`
+
+type GetGroupMembersRow struct {
+	OktaID string `json:"okta_id"`
+	Email  string `json:"email"`
+}
+
+func (q *Queries) GetGroupMembers(ctx context.Context, name string) ([]GetGroupMembersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getGroupMembers, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetGroupMembersRow
+	for rows.Next() {
+		var i GetGroupMembersRow
+		if err := rows.Scan(&i.OktaID, &i.Email); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, okta_id, active
 FROM Employee
@@ -339,6 +375,23 @@ WHERE okta_group_name = $1
 
 func (q *Queries) RemoveAllGroupMembers(ctx context.Context, oktaGroupName string) error {
 	_, err := q.db.ExecContext(ctx, removeAllGroupMembers, oktaGroupName)
+	return err
+}
+
+const removeGroupMember = `-- name: RemoveGroupMember :exec
+DELETE
+FROM EmployeeOktaGroup
+WHERE employee_id = $1
+  AND okta_group_name = $2
+`
+
+type RemoveGroupMemberParams struct {
+	EmployeeID    string `json:"employee_id"`
+	OktaGroupName string `json:"okta_group_name"`
+}
+
+func (q *Queries) RemoveGroupMember(ctx context.Context, arg RemoveGroupMemberParams) error {
+	_, err := q.db.ExecContext(ctx, removeGroupMember, arg.EmployeeID, arg.OktaGroupName)
 	return err
 }
 
