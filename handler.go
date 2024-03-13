@@ -103,7 +103,6 @@ func (h *handler) loggingMiddleware(handle httprouter.Handle) httprouter.Handle 
 }
 
 func (h *handler) extractOktaID(encodedID string) string {
-	// This pattern matches the encoded ID format you provided.
 	pattern := `%!d\(string=(.+)\)`
 	re := regexp.MustCompile(pattern)
 	matches := re.FindStringSubmatch(encodedID)
@@ -123,7 +122,6 @@ func (h *handler) GetUser() httprouter.Handle {
 		// Attempt to extract the actual ID from the encoded format
 		oktaID := h.extractOktaID(encodedID)
 
-		// Fetch the user by Okta ID from your database
 		user, err := h.db.GetUserByID(context.Background(), oktaID)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -134,7 +132,6 @@ func (h *handler) GetUser() httprouter.Handle {
 			return
 		}
 
-		// Convert your database user model to a SCIM user model here
 		scimUser := convertToSCIMUser(
 			&User{
 				ID:     user.ID,
@@ -326,7 +323,6 @@ func (h *handler) FindUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	// Convert your DB user to SCIM User format and respond
 	scimUser := convertToSCIMUser(
 		&User{
 			ID:     user.ID,

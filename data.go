@@ -105,7 +105,6 @@ type SCIMGroup struct {
 type SCIMGroupMember struct {
 	Value   string `json:"value"`   // The identifier of the member in this Group
 	Display string `json:"display"` // A human-readable name for the member, primarily used for display purposes
-	// Depending on your implementation, you might want to include other attributes like "$ref" or "type"
 }
 
 // SCIMGroupMeta contains metadata about the SCIM Group resource.
@@ -140,7 +139,6 @@ type Group struct {
 }
 
 func convertToSCIMUser(dbUser *User) SCIMUser {
-	// Splitting the name just as an example. Adjust this according to your actual data.
 	names := strings.Fields(dbUser.Name)
 	givenName := names[0]
 	familyName := ""
@@ -177,7 +175,6 @@ func convertToSCIMGroup(group *Group) SCIMGroup {
 	// Initialize an empty slice for SCIM members
 	var members []SCIMGroupMember
 
-	// If your group struct contains member information, convert them to SCIM members
 	for _, member := range group.Members {
 		scimMember := SCIMGroupMember{
 			Value:   member.OktaID,
