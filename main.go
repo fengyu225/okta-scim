@@ -25,12 +25,17 @@ func main() {
 		log.Fatal("Requires environment variables SCIM_USER and SCIM_PASSWORD")
 	}
 
+	oktaDomain := os.Getenv("OKTA_DOMAIN")
+	if oktaDomain == "" {
+		log.Fatal("Requires environment variable OKTA_DOMAIN")
+	}
+
 	oktaAPIToken := os.Getenv("OKTA_API_TOKEN")
 	if oktaAPIToken == "" {
 		log.Fatal("Requires environment variable OKTA_API_TOKEN")
 	}
 
-	oktaClient, err := newOktaClient(oktaAPIToken)
+	oktaClient, err := newOktaClient(oktaDomain, oktaAPIToken)
 
 	queries := db.New(dbConn)
 

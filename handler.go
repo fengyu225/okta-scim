@@ -662,16 +662,6 @@ func (h *handler) UpdateGroup() httprouter.Handle {
 				http.Error(w, "Failed to add group member", http.StatusInternalServerError)
 				return
 			}
-			if _, ok := twilioRoleToOktaGroup[updateReq.DisplayName]; ok {
-				fmt.Printf("Adding Twilio role to user %s for group %s\n", member, updateReq.DisplayName)
-				if err := h.oktaClient.addTwilioRole(member, updateReq.DisplayName); err != nil {
-					fmt.Printf("Failed to add Twilio role to user %s for group %s: %v\n", member, updateReq.DisplayName, err)
-					http.Error(w, "Failed to add Twilio role", http.StatusInternalServerError)
-					return
-				}
-			} else {
-				fmt.Printf("No Twilio role to add for group %s\n", updateReq.DisplayName)
-			}
 		}
 
 		// Remove members no longer in the group
@@ -682,16 +672,6 @@ func (h *handler) UpdateGroup() httprouter.Handle {
 			}); err != nil {
 				http.Error(w, "Failed to remove group member", http.StatusInternalServerError)
 				return
-			}
-			if _, ok := twilioRoleToOktaGroup[updateReq.DisplayName]; ok {
-				fmt.Printf("Removing Twilio role from user %s for group %s\n", value, updateReq.DisplayName)
-				if err := h.oktaClient.removeTwilioRole(value, updateReq.DisplayName); err != nil {
-					fmt.Printf("Failed to remove Twilio role from user %s for group %s: %v\n", value, updateReq.DisplayName, err)
-					http.Error(w, "Failed to remove Twilio role", http.StatusInternalServerError)
-					return
-				}
-			} else {
-				fmt.Printf("No Twilio role to remove for group %s\n", updateReq.DisplayName)
 			}
 		}
 
